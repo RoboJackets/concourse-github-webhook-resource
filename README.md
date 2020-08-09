@@ -8,10 +8,9 @@ All fields are required.
 
 - `github_token` - GitHub App token to use to authenticate
 - `webhook_token` - the webhook token configured for your resources
-- `jobs` - map of job names that are interested in resources
-- `jobs.resource_name` - the name of the resource
-- `jobs.github_uri` - the GitHub repository URL to configure
-- `jobs.events` - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
+- `resources` - map of resources to subscribe to GitHub events (keyed by name of the resource)
+- `resources.github_uri` - the GitHub repository URL to configure
+- `resources.events` - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
 
 ## Behavior
 Do not `get` this resource manually, it will not work.

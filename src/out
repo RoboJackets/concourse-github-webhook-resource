@@ -52,8 +52,8 @@ assert isinstance(BUILD_TEAM_NAME, str)
 BUILD_PIPELINE_NAME = getenv("BUILD_PIPELINE_NAME")
 assert isinstance(BUILD_PIPELINE_NAME, str)
 
-required_source_fields = ("github_token", "webhook_token", "jobs")
-required_job_fields = ("resource_name", "github_uri", "events")
+required_source_fields = ("github_token", "webhook_token", "resources")
+required_resource_fields = ("github_uri", "events")
 
 assert len(argv) == 2
 
@@ -79,20 +79,22 @@ for source_field in required_source_fields:
 for source_field in concourse_input["source"]:
     assert source_field in required_source_fields, f"Unexpected field `{source_field}` in `source`"
 
-jobs = concourse_input["source"]["jobs"]
+resources = concourse_input["source"]["resources"]
 
-assert isinstance(jobs, dict)
-assert len(jobs) > 0
+assert isinstance(resources, dict)
+assert len(resources) > 0
 
-for job in jobs:
-    assert isinstance(jobs[job], list)
-    for job_resource in jobs[job]:
-        assert isinstance(job_resource, dict)
-        for job_field in job_resource:
-            assert job_field in required_job_fields, f"Missing required field `{job_field}` in resource for job `{job}`"
-        for job_field in required_job_fields:
-            assert job_field in job_resource, f"Unexpected field `{job_field}` in resource for job `{job}`"
-
+for resource_name in resources:
+    resource_config = resources[resource_name]
+    assert isinstance(resource_config, dict)
+    for resource_field in required_resource_fields:
+        assert (
+            resource_field in resource_config
+        ), f"Missing required field `{resource_field}` in resource `{resource_name}`"
+    for resource_field in resource_config:
+        assert (
+            resource_field in required_resource_fields
+        ), f"Unexpected field `{resource_field}` in resource `{resource_name}`"
 
 headers = {
     "Authorization": "Bearer " + concourse_input["source"]["github_token"],
@@ -103,25 +105,25 @@ headers = {
 repository_webhook_events: Dict[str, Dict[str, List[str]]] = {}
 github_hosts = set()
 
-for job in jobs:
-    for job_resource in jobs[job]:
-        repository = job_resource["github_uri"]
-        concourse_webhook = get_webhook_url(
-            ATC_EXTERNAL_URL,
-            BUILD_TEAM_NAME,
-            BUILD_PIPELINE_NAME,
-            job_resource["resource_name"],
-            concourse_input["source"]["webhook_token"],
-        )
-        events = job_resource["events"]
+for resource_name in resources:
+    resource_config = resources[resource_name]
+    repository = resource_config["github_uri"]
+    concourse_webhook = get_webhook_url(
+        ATC_EXTERNAL_URL,
+        BUILD_TEAM_NAME,
+        BUILD_PIPELINE_NAME,
+        resource_name,
+        concourse_input["source"]["webhook_token"],
+    )
+    events = resource_config["events"]
 
-        github_hosts.add(repository.split("/")[2])
+    github_hosts.add(repository.split("/")[2])
 
-        if repository in repository_webhook_events:
-            assert concourse_webhook not in repository_webhook_events[repository]
-            repository_webhook_events[repository][concourse_webhook] = events
-        else:
-            repository_webhook_events[repository] = {concourse_webhook: events}
+    if repository in repository_webhook_events:
+        assert concourse_webhook not in repository_webhook_events[repository]
+        repository_webhook_events[repository][concourse_webhook] = events
+    else:
+        repository_webhook_events[repository] = {concourse_webhook: events}
 
 assert len(github_hosts) == 1, "This resource currently only supports a single GitHub server."
 
