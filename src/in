@@ -4,4 +4,4 @@
 Does nothing
 """
 
-print('{"version":{"status":"ok"}')
+print('{"version":{"status":"ok"}}')
