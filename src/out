@@ -168,7 +168,7 @@ for resource_name in resources:
     events = resource_config["events"]
     assert isinstance(events, list)
     assert len(events) > 0
-    for event in resource_config:
+    for event in events:
         assert event in event_options, f"Unsupported event `{event}` requested for resource `{resource_name}`"
 
 headers = {
