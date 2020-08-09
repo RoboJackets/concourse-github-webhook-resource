@@ -161,7 +161,7 @@ for repository in repository_webhook_events:
     api_base_url = get_api_base_url(github_information[2])
     owner = github_information[3]
     repo = github_information[4]
-    response = get(f"{api_base_url}/repos/{owner}/{repo}/hooks")
+    response = get(f"{api_base_url}/repos/{owner}/{repo}/hooks", headers=headers)
     json = response.json()
     assert response.status_code == 200, f"Got unexpected response code {response.status_code} from GitHub: {json}"
     for existing_webhook in json:
