@@ -89,10 +89,16 @@ if "debug" in concourse_input["source"]:
     if not concourse_input["source"]["debug"] is True:
         print("Debug flag set to invalid value, check documentation")
         sys.exit(1)
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
+
     handler = logging.StreamHandler(stderr)
     handler.setLevel(logging.DEBUG)
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
+    logger.debug("Debug logging enabled")
+
     HTTPConnection.debuglevel = 1  # type: ignore
 
 resources = concourse_input["source"]["resources"]
