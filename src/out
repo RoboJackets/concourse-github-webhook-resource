@@ -162,9 +162,10 @@ for repository in repository_webhook_events:
     owner = github_information[3]
     repo = github_information[4]
     response = get(f"{api_base_url}/repos/{owner}/{repo}/hooks", headers=headers)
-    json = response.json()
-    assert response.status_code == 200, f"Got unexpected response code {response.status_code} from GitHub: {json}"
-    for existing_webhook in json:
+    assert (
+        response.status_code == 200
+    ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
+    for existing_webhook in response.json():
         url = existing_webhook["config"]["url"]
         if url.startswith(ATC_EXTERNAL_URL):
             if url in repository_webhook_events[repository]:
@@ -176,7 +177,7 @@ for repository in repository_webhook_events:
                     )
                     assert (
                         response.status_code == 200
-                    ), f"Got unexpected response code {response.status_code} from GitHub: {json}"
+                    ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
                 del repository_webhook_events[repository][url]
                 continue
             last_response = existing_webhook["last_response"]
@@ -184,13 +185,15 @@ for repository in repository_webhook_events:
                 response = delete(existing_webhook["url"], headers=headers)
                 assert (
                     response.status_code == 204
-                ), f"Got unexpected response code {response.status_code} from GitHub: {json}"
+                ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
     for new_webhook in repository_webhook_events[repository]:
         response = post(
             f"{api_base_url}/repos/{owner}/{repo}/hooks",
             json={"config": {"url": new_webhook}, "events": repository_webhook_events[repository][new_webhook]},
         )
-        assert response.status_code == 201, f"Got unexpected response code {response.status_code} from GitHub: {json}"
+        assert (
+            response.status_code == 201
+        ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
 
 metadata = []
 
