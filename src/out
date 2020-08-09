@@ -12,6 +12,16 @@ from requests import delete, get, patch, post
 
 
 def get_webhook_url(atc_url: str, team: str, pipeline: str, resource: str, webhook_token: str) -> str:
+    """
+    Builds a webhook for a resource
+
+    :param atc_url: the publicly accessible ATC URL for this Concourse instance
+    :param team: the team for this pipeline
+    :param pipeline: the pipeline for this resource
+    :param resource: the name of this resource
+    :param webhook_token: the webhook token for the resource
+    :return: a complete webhook url
+    """
     return (
         atc_url
         + "/api/v1/teams/"
@@ -26,6 +36,12 @@ def get_webhook_url(atc_url: str, team: str, pipeline: str, resource: str, webho
 
 
 def get_api_base_url(host: str) -> str:
+    """
+    Determines the correct API URL for a given GitHub server
+
+    :param host: the GitHub host name
+    :return: the full URL for the GitHub API
+    """
     return "https://" + ("api.github.com" if host == "github.com" else host + "/api/v3")
 
 
@@ -70,12 +86,12 @@ assert len(jobs) > 0
 
 for job in jobs:
     assert isinstance(jobs[job], list)
-    for resource in jobs[job]:
-        assert isinstance(resource, dict)
-        for job_field in resource:
+    for job_resource in jobs[job]:
+        assert isinstance(job_resource, dict)
+        for job_field in job_resource:
             assert job_field in required_job_fields, f"Missing required field `{job_field}` in resource for job `{job}`"
         for job_field in required_job_fields:
-            assert job_field in resource, f"Unexpected field `{job_field}` in resource for job `{job}`"
+            assert job_field in job_resource, f"Unexpected field `{job_field}` in resource for job `{job}`"
 
 
 headers = {
@@ -88,16 +104,16 @@ repository_webhook_events: Dict[str, Dict[str, List[str]]] = {}
 github_hosts = set()
 
 for job in jobs:
-    for resource in jobs[job]:
-        repository = resource["github_uri"]
+    for job_resource in jobs[job]:
+        repository = job_resource["github_uri"]
         concourse_webhook = get_webhook_url(
             ATC_EXTERNAL_URL,
             BUILD_TEAM_NAME,
             BUILD_PIPELINE_NAME,
-            resource["resource_name"],
+            job_resource["resource_name"],
             concourse_input["source"]["webhook_token"],
         )
-        events = resource["events"]
+        events = job_resource["events"]
 
         github_hosts.add(repository.split("/")[2])
 
@@ -156,9 +172,9 @@ metadata = []
 
 for repository in repository_webhook_events:
     github_information = repository.split("/")
-    host = github_information[2]
+    github_host = github_information[2]
     owner = github_information[3]
     repo = github_information[4]
-    metadata.append({"name": repo, "value": f"https://{host}/{owner}/{repo}/settings/hooks"})
+    metadata.append({"name": repo, "value": f"https://{github_host}/{owner}/{repo}/settings/hooks"})
 
 print(dumps({"version": {"status": "ok"}, "metadata": metadata}))
