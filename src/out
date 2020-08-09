@@ -187,7 +187,7 @@ for repository in repository_webhook_events:
         response = post(
             f"{api_base_url}/repos/{owner}/{repo}/hooks",
             json={"config": {"url": new_webhook}, "events": repository_webhook_events[repository][new_webhook]},
-            headers=headers
+            headers=headers,
         )
         assert (
             response.status_code == 201
