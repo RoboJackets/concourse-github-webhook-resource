@@ -57,6 +57,57 @@ assert isinstance(BUILD_PIPELINE_NAME, str)
 required_source_fields = ("github_token", "webhook_token", "resources")
 optional_source_fields = ("debug",)
 required_resource_fields = ("github_uri", "events")
+event_options = (
+    "check_run",
+    "check_suite",
+    "commit_comment",
+    "content_reference",
+    "create",
+    "delete",
+    "deploy_key",
+    "deployment",
+    "deployment_status",
+    "fork",
+    "github_app_authorization",
+    "gollum",
+    "installation",
+    "installation_repositories",
+    "issue_comment",
+    "issues",
+    "label",
+    "marketplace_purchase",
+    "member",
+    "membership",
+    "meta",
+    "milestone",
+    "organization",
+    "org_block",
+    "package",
+    "page_build",
+    "ping",
+    "project_card",
+    "project_column",
+    "project",
+    "public",
+    "pull_request",
+    "pull_request_review",
+    "pull_request_review_comment",
+    "push",
+    "release",
+    "repository_dispatch",
+    "repository",
+    "repository_import",
+    "repository_vulnerability_alert",
+    "security_advisory",
+    "sponsorship",
+    "star",
+    "status",
+    "team",
+    "team_add",
+    "watch",
+    "workflow_dispatch",
+    "workflow_run",
+)
 
 assert len(argv) == 2
 
@@ -114,6 +165,11 @@ for resource_name in resources:
         assert (
             resource_field in required_resource_fields
         ), f"Unexpected field `{resource_field}` in resource `{resource_name}`"
+    events = resource_config["events"]
+    assert isinstance(events, list)
+    assert len(events) > 1
+    for event in resource_config:
+        assert event in event_options, f"Unsupported event `{event}` requested for resource `{resource_name}`"
 
 headers = {
     "Authorization": "Bearer " + concourse_input["source"]["github_token"],
