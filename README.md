@@ -4,13 +4,13 @@
 Concourse resource to automatically configure webhooks for a GitHub repository
 
 ## Source configuration
-All fields are required.
 
-- `github_token` - GitHub App token to use to authenticate
-- `webhook_token` - the webhook token configured for your resources
-- `resources` - map of resources to subscribe to GitHub events (keyed by name of the resource)
-- `resources.github_uri` - the GitHub repository URL to configure
-- `resources.events` - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
+- `github_token` (required) - GitHub App token to use to authenticate
+- `webhook_token` (required) - the webhook token configured for your resources
+- `debug` (optional) - whether to enable debug logging; must be set to boolean true if present
+- `resources` (required) - map of resources to subscribe to GitHub events (keyed by name of the resource)
+- `resources.github_uri` (required) - the GitHub repository URL to configure
+- `resources.events` (required) - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
 
 ## Behavior
 Do not `get` this resource manually, it will not work.
