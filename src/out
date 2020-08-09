@@ -6,12 +6,23 @@ Calls the GitHub API to create or update a check run
 from json import dumps, loads
 from os import getenv, listdir, path
 from sys import argv, stderr, stdin
+from typing import Dict, List
 
-from requests import patch, post, get, delete
+from requests import delete, get, patch, post
 
 
 def get_webhook_url(atc_url: str, team: str, pipeline: str, resource: str, webhook_token: str) -> str:
-    return f"{atc_url}/api/v1/teams/{team}/pipelines/{pipeline}/resources/{resource}/check/webhook?webhook_token={webhook_token}"
+    return (
+        atc_url
+        + "/api/v1/teams/"
+        + team
+        + "/pipelines/"
+        + pipeline
+        + "/resources/"
+        + resource
+        + "/check/webhook?webhook_token="
+        + webhook_token
+    )
 
 
 def get_api_base_url(host: str) -> str:
@@ -20,10 +31,10 @@ def get_api_base_url(host: str) -> str:
 
 ATC_EXTERNAL_URL = getenv("ATC_EXTERNAL_URL")
 assert isinstance(ATC_EXTERNAL_URL, str)
-ATC_EXTERNAL_URL = getenv("BUILD_TEAM_NAME")
-assert isinstance(ATC_EXTERNAL_URL, str)
-ATC_EXTERNAL_URL = getenv("BUILD_PIPELINE_NAME")
-assert isinstance(ATC_EXTERNAL_URL, str)
+BUILD_TEAM_NAME = getenv("BUILD_TEAM_NAME")
+assert isinstance(BUILD_TEAM_NAME, str)
+BUILD_PIPELINE_NAME = getenv("BUILD_PIPELINE_NAME")
+assert isinstance(BUILD_PIPELINE_NAME, str)
 
 required_source_fields = ("github_token", "webhook_token", "jobs")
 required_job_fields = ("resource_name", "github_uri", "events")
@@ -73,13 +84,19 @@ headers = {
     "Accept": "application/vnd.github.v3+json",
 }
 
-repository_webhook_events = {}
+repository_webhook_events: Dict[str, Dict[str, List[str]]] = {}
 github_hosts = set()
 
 for job in jobs:
     for resource in jobs[job]:
         repository = resource["github_uri"]
-        concourse_webhook = get_webhook_url(job, resource['resource_name'], concourse_input["source"]["webhook_token"])
+        concourse_webhook = get_webhook_url(
+            ATC_EXTERNAL_URL,
+            BUILD_TEAM_NAME,
+            BUILD_PIPELINE_NAME,
+            resource["resource_name"],
+            concourse_input["source"]["webhook_token"],
+        )
         events = resource["events"]
 
         github_hosts.add(repository.split("/")[2])
@@ -88,16 +105,16 @@ for job in jobs:
             assert concourse_webhook not in repository_webhook_events[repository]
             repository_webhook_events[repository][concourse_webhook] = events
         else:
-            repository_webhook_events[repository] = {
-                concourse_webhook: events
-            }
+            repository_webhook_events[repository] = {concourse_webhook: events}
 
 assert len(github_hosts) == 1, "This resource currently only supports a single GitHub server."
 
 for repository in repository_webhook_events:
     for concourse_webhook in repository_webhook_events[repository]:
         response = post(concourse_webhook)
-        assert response.status_code == 201, f"Got unexpected status code {response.status_code} from Concourse, verify configuration is correct"
+        assert (
+            response.status_code == 201
+        ), f"Got unexpected status code {response.status_code} from Concourse, verify configuration is correct"
 
 for repository in repository_webhook_events:
     github_information = repository.split("/")
@@ -112,16 +129,27 @@ for repository in repository_webhook_events:
         if url.startswith(ATC_EXTERNAL_URL):
             if url in repository_webhook_events[repository]:
                 if not set(existing_webhook["events"]) == set(repository_webhook_events[repository][url]):
-                    response = patch(existing_webhook["url"], json={"events":repository_webhook_events[repository][url]}, headers=headers)
-                    assert response.status_code == 200, f"Got unexpected response code {response.status_code} from GitHub: {json}"
+                    response = patch(
+                        existing_webhook["url"],
+                        json={"events": repository_webhook_events[repository][url]},
+                        headers=headers,
+                    )
+                    assert (
+                        response.status_code == 200
+                    ), f"Got unexpected response code {response.status_code} from GitHub: {json}"
                 del repository_webhook_events[repository][url]
                 continue
             last_response = existing_webhook["last_response"]
             if last_response["code"] is not None and last_response != 201:
                 response = delete(existing_webhook["url"], headers=headers)
-                assert response.status_code == 204, f"Got unexpected response code {response.status_code} from GitHub: {json}"
+                assert (
+                    response.status_code == 204
+                ), f"Got unexpected response code {response.status_code} from GitHub: {json}"
     for new_webhook in repository_webhook_events[repository]:
-        response = post(f"{api_base_url}/repos/{owner}/{repo}/hooks", json={"config":{"url":new_webhook},"events":repository_webhook_events[repository][new_webhook]})
+        response = post(
+            f"{api_base_url}/repos/{owner}/{repo}/hooks",
+            json={"config": {"url": new_webhook}, "events": repository_webhook_events[repository][new_webhook]},
+        )
         assert response.status_code == 201, f"Got unexpected response code {response.status_code} from GitHub: {json}"
 
 metadata = []
@@ -131,20 +159,6 @@ for repository in repository_webhook_events:
     host = github_information[2]
     owner = github_information[3]
     repo = github_information[4]
-    metadata.append(
-        {
-            {
-                "name": repo,
-                "value": f"https://{host}/{owner}/{repo}/settings/hooks"
-            }
-        }
-    )
+    metadata.append({"name": repo, "value": f"https://{host}/{owner}/{repo}/settings/hooks"})
 
-print(
-    dumps(
-        {
-            "version": {"status": "ok"},
-            "metadata": metadata
-        }
-    )
-)
+print(dumps({"version": {"status": "ok"}, "metadata": metadata}))
