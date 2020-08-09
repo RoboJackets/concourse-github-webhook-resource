@@ -5,7 +5,6 @@ Calls the GitHub API to create or update a check run
 """
 import logging
 import sys
-from http.client import HTTPConnection
 from json import dumps, loads
 from os import getenv, listdir, path
 from sys import argv, stderr, stdin
@@ -99,8 +98,6 @@ if "debug" in concourse_input["source"]:
 
     logger.debug("Debug logging enabled")
 
-    HTTPConnection.debuglevel = 1  # type: ignore
-
 resources = concourse_input["source"]["resources"]
 
 assert isinstance(resources, dict)
@@ -190,6 +187,7 @@ for repository in repository_webhook_events:
         response = post(
             f"{api_base_url}/repos/{owner}/{repo}/hooks",
             json={"config": {"url": new_webhook}, "events": repository_webhook_events[repository][new_webhook]},
+            headers=headers
         )
         assert (
             response.status_code == 201
