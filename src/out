@@ -167,7 +167,7 @@ for resource_name in resources:
         ), f"Unexpected field `{resource_field}` in resource `{resource_name}`"
     events = resource_config["events"]
     assert isinstance(events, list)
-    assert len(events) > 1
+    assert len(events) > 0
     for event in resource_config:
         assert event in event_options, f"Unsupported event `{event}` requested for resource `{resource_name}`"
 
