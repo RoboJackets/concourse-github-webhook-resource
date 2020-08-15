@@ -234,7 +234,7 @@ for repository in repository_webhook_events:
                 del repository_webhook_events[repository][url]
                 continue
             last_response = existing_webhook["last_response"]
-            if last_response["code"] is not None and last_response["code"] != 201:
+            if last_response["code"] is not None and last_response["code"] not in (200, 201):
                 response = delete(existing_webhook["url"], headers=headers)
                 assert (
                     response.status_code == 204
