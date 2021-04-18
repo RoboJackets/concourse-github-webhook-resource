@@ -4,8 +4,7 @@
 Calls the GitHub API to create or update a check run
 """
 import logging
-import sys
-from json import dumps, loads
+from json import dumps, load, loads
 from os import getenv, listdir, path
 from sys import argv, stderr, stdin
 from typing import Dict, List
