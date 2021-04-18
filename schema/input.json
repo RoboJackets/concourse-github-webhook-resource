@@ -78,12 +78,12 @@
                                     ]
                                 },
                                 "minItems": 1,
-                                "uniqueItems": true
-                            },
-                            "required": [
-                                "github_uri",
-                                "events"
-                            ]
+                                "uniqueItems": true,
+                                "required": [
+                                    "github_uri",
+                                    "events"
+                                ]
+                            }
                         }
                     },
                     "minProperties": 1
