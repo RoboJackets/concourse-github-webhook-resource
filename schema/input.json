@@ -1,0 +1,107 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "source": {
+            "type": "object",
+            "properties": {
+                "github_token": {
+                    "type": "string",
+                    "regex": "ghs_[a-zA-Z0-9]{36}"
+                },
+                "webhook_token": {
+                    "type": "string"
+                },
+                "resources": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "github_uri": {
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "check_run",
+                                        "check_suite",
+                                        "commit_comment",
+                                        "content_reference",
+                                        "create",
+                                        "delete",
+                                        "deploy_key",
+                                        "deployment",
+                                        "deployment_status",
+                                        "fork",
+                                        "github_app_authorization",
+                                        "gollum",
+                                        "installation",
+                                        "installation_repositories",
+                                        "issue_comment",
+                                        "issues",
+                                        "label",
+                                        "marketplace_purchase",
+                                        "member",
+                                        "membership",
+                                        "meta",
+                                        "milestone",
+                                        "organization",
+                                        "org_block",
+                                        "package",
+                                        "page_build",
+                                        "ping",
+                                        "project_card",
+                                        "project_column",
+                                        "project",
+                                        "public",
+                                        "pull_request",
+                                        "pull_request_review",
+                                        "pull_request_review_comment",
+                                        "push",
+                                        "release",
+                                        "repository_dispatch",
+                                        "repository",
+                                        "repository_import",
+                                        "repository_vulnerability_alert",
+                                        "security_advisory",
+                                        "sponsorship",
+                                        "star",
+                                        "status",
+                                        "team",
+                                        "team_add",
+                                        "watch",
+                                        "workflow_dispatch",
+                                        "workflow_run"
+                                    ]
+                                },
+                                "minItems": 1,
+                                "uniqueItems": true
+                            }
+                        }
+                    },
+                    "minProperties": 1,
+                    "required": [
+                        "github_uri",
+                        "events"
+                    ]
+                },
+                "debug": {
+                    "const": true
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "github_token",
+                "webhook_token",
+                "resources"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "source"
+    ]
+}

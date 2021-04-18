@@ -6,10 +6,10 @@ Concourse resource to automatically configure webhooks for a GitHub repository
 ## Source configuration
 
 - `github_token` (required) - GitHub App token to use to authenticate
-- `webhook_token` (required) - the webhook token configured for your resources
+- `webhook_token` (required) - webhook token configured for your resources
 - `debug` (optional) - whether to enable debug logging; must be set to boolean true if present
 - `resources` (required) - map of resources to subscribe to GitHub events (keyed by name of the resource)
-- `resources.github_uri` (required) - the GitHub repository URL to configure
+- `resources.github_uri` (required) - GitHub repository URL to configure
 - `resources.events` (required) - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
 
 ## Behavior
@@ -31,4 +31,4 @@ Specifically, this resource takes the following steps:
 - Removes any webhooks that most recently returned a 404
 - Creates and updates remaining webhooks as needed
 
-You may want to [manually configure inputs](https://concourse-ci.org/jobs.html#schema.step.put-step.inputs) for better performance. This resource does not require any inputs.
+`inputs` must be an empty list; this reduces overhead starting the container.
