@@ -79,14 +79,14 @@
                                 },
                                 "minItems": 1,
                                 "uniqueItems": true
-                            }
+                            },
+                            "required": [
+                                "github_uri",
+                                "events"
+                            ]
                         }
                     },
-                    "minProperties": 1,
-                    "required": [
-                        "github_uri",
-                        "events"
-                    ]
+                    "minProperties": 1
                 },
                 "debug": {
                     "const": true
