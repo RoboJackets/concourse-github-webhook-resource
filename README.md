@@ -9,6 +9,7 @@ Concourse resource to automatically configure webhooks for a GitHub repository
 - `webhook_token` (required) - webhook token configured for your resources
 - `debug` (optional) - whether to enable debug logging; must be set to boolean true if present
 - `resources` (required) - map of resources to subscribe to GitHub events (keyed by name of the resource)
+  - A `webhook_token` must also be specified on each of the resources' definitions in the pipeline-level `resources` block
 - `resources.github_uri` (required) - GitHub repository URL to configure
 - `resources.events` (required) - list of events to subscribe to (see [the GitHub API documentation](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads) for options)
 
