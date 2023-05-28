@@ -66,7 +66,9 @@ assert len(listdir(input_directory)) == 0, "This resource does not take any inpu
 
 concourse_input = loads(stdin.read())
 
-with open(path.join(path.dirname(path.realpath(__file__)), "..", "schema", "input.json"), "r") as schema:
+with open(
+    file=path.join(path.dirname(path.realpath(__file__)), "..", "schema", "input.json"), mode="r", encoding="utf-8"
+) as schema:
     validate(instance=concourse_input, schema=load(schema))
 
 if "debug" in concourse_input["source"]:
@@ -114,48 +116,50 @@ for resource_name in resources:
 
 assert len(github_hosts) == 1, "This resource currently only supports a single GitHub server."
 
-for repository in repository_webhook_events:
-    for concourse_webhook in repository_webhook_events[repository]:
-        response = post(concourse_webhook)
+for repository_webhook_event in repository_webhook_events.values():
+    for concourse_webhook in repository_webhook_event:
+        response = post(concourse_webhook, timeout=(1, 1))
         assert (
             response.status_code == 201
         ), f"Got unexpected status code {response.status_code} from Concourse, verify configuration is correct"
 
-for repository in repository_webhook_events:
+for repository, repository_webhook_event in repository_webhook_events.values():  # type: ignore
     github_information = repository.split("/")
     api_base_url = get_api_base_url(github_information[2])
     owner = github_information[3]
     repo = github_information[4]
-    response = get(f"{api_base_url}/repos/{owner}/{repo}/hooks", headers=headers)
+    response = get(f"{api_base_url}/repos/{owner}/{repo}/hooks", headers=headers, timeout=(5, 5))
     assert (
         response.status_code == 200
     ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
     for existing_webhook in response.json():
         url = existing_webhook["config"]["url"]
         if url.startswith(ATC_EXTERNAL_URL):
-            if url in repository_webhook_events[repository]:
-                if not set(existing_webhook["events"]) == set(repository_webhook_events[repository][url]):
+            if url in repository_webhook_event:
+                if not set(existing_webhook["events"]) == set(repository_webhook_event[url]):
                     response = patch(
                         existing_webhook["url"],
-                        json={"events": repository_webhook_events[repository][url]},
+                        json={"events": repository_webhook_event[url]},
                         headers=headers,
+                        timeout=(5, 5),
                     )
                     assert (
                         response.status_code == 200
                     ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
-                del repository_webhook_events[repository][url]
+                del repository_webhook_event[url]
                 continue
             last_response = existing_webhook["last_response"]
             if last_response["code"] is not None and last_response["code"] not in (200, 201):
-                response = delete(existing_webhook["url"], headers=headers)
+                response = delete(existing_webhook["url"], headers=headers, timeout=(5, 5))
                 assert (
                     response.status_code == 204
                 ), f"Got unexpected response code {response.status_code} from GitHub: {response.json()}"
-    for new_webhook in repository_webhook_events[repository]:
+    for new_webhook in repository_webhook_event:
         response = post(
             f"{api_base_url}/repos/{owner}/{repo}/hooks",
-            json={"config": {"url": new_webhook}, "events": repository_webhook_events[repository][new_webhook]},
+            json={"config": {"url": new_webhook}, "events": repository_webhook_event[new_webhook]},
             headers=headers,
+            timeout=(5, 5),
         )
         assert (
             response.status_code == 201
