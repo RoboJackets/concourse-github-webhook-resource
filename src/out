@@ -123,7 +123,7 @@ for repository_webhook_event in repository_webhook_events.values():
             response.status_code == 201
         ), f"Got unexpected status code {response.status_code} from Concourse, verify configuration is correct"
 
-for repository_webhook_event, repository in repository_webhook_events.values():  # type: ignore
+for repository, repository_webhook_event in repository_webhook_events.items():
     github_information = repository.split("/")
     api_base_url = get_api_base_url(github_information[2])
     owner = github_information[3]
