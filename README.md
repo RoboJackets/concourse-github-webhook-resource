@@ -1,5 +1,5 @@
 # concourse-github-webhook-resource
-[![GitHub license](https://img.shields.io/github/license/RoboJackets/concourse-github-check-resource)](https://github.com/RoboJackets/concourse-github-check-resource/blob/main/LICENSE) [![CI](https://concourse.robojackets.org/api/v1/teams/information-technology/pipelines/github-webhook/jobs/build-main/badge)](https://concourse.robojackets.org/teams/information-technology/pipelines/github-webhook)
+[![GitHub license](https://img.shields.io/github/license/RoboJackets/concourse-github-check-resource)](https://github.com/RoboJackets/concourse-github-check-resource/blob/main/LICENSE) [![CI](https://concourse.sandbox.aws.robojackets.net/api/v1/teams/information-technology/pipelines/github-webhook/jobs/build-main/badge)](https://concourse.sandbox.aws.robojackets.net/teams/information-technology/pipelines/github-webhook)
 
 Concourse resource to automatically configure webhooks for a GitHub repository
 
